@@ -15,18 +15,34 @@ firebase.initializeApp(config);
 class Usurvey extends Component {
 
   nameSubmit(event){
-    var studentName = this.refs.name.value;
-    this.setState({studentName: studentName}, function(){
+    var student_name = this.refs.name.value;
+    this.setState({studentName: student_name}, function(){
       console.log(this.state);
     })
   }
 
-  answerSelected(){
-    //TODO; work on this
+  answerSelected(event){
+
+    var answers = this.state.answers;
+    if (event.target.name === 'answer1'){
+      answers.answer1 = event.target.value;
+    } else if (event.target.name === 'answer2'){
+      answers.answer2 = event.target.value;
+    } else {
+      answers.answer3 = event.target.value;
+    }
+
+    this.setState({answers: answers}, function (){
+      console.log(this.state);
+    })
   }
 
   questionSubmit(){
-    //TODO; work on this
+    firebase.database().ref('uServey/'+this.state.uid).set({
+      studentName: this.state.studentName,
+      answers: this.state.answers
+    });
+    this.setState({isSubmitted: true});
   }
 
   constructor(props){
@@ -34,7 +50,10 @@ class Usurvey extends Component {
 
     this.state = {
       uid: uuid.v1(),
-      studentName: 'JohnDoe',
+      studentName: '',
+
+      value: '',
+
       answers: {
         answer1: '',
         answer2: '',
@@ -58,16 +77,16 @@ class Usurvey extends Component {
         </form>
       </div>;
       questions = ''
-    } else if (this.state.studentName != '' && this.state.isSubmitted === false){
+    } else if (this.state.studentName !== '' && this.state.isSubmitted === false){
       studentName = <h1>Hey there, welcome to Usurvey, {this.state.studentName}</h1>;
       questions = <div>
         <h2>Here are some questions: </h2>
         <form onSubmit={this.questionSubmit}>
           <div className='card'>
             <label>What courses do you like the most?</label> <br />
-            <input type="radio" name="answer1" value="Tech" onChange={this.answerSelected} /> Tech
-            <input type="radio" name="answer1" value="Design" onChange={this.answerSelected} /> Design
-            <input type="radio" name="answer1" value="Marketing" onChange={this.answerSelected} /> Marketing
+            <input type="radio" name="answer1" value="Tech" onChange={this.answerSelected} ref='choice' /> Tech
+            <input type="radio" name="answer1" value="Design" onChange={this.answerSelected} ref='choice' /> Design
+            <input type="radio" name="answer1" value="Marketing" onChange={this.answerSelected} ref='choice' /> Marketing
           </div>
           <div className='card'>
             <label>You are a: </label> <br />
@@ -85,6 +104,8 @@ class Usurvey extends Component {
           <input className="feed-back-button" type="submit" value ="submit" />
         </form>
       </div>;
+    } else if (this.state.isSubmitted === true){
+      studentName = <h1>Thank you!, {this.state.studentName}</h1>
     }
 
     return(
